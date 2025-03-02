@@ -1,6 +1,18 @@
-.env
+# Python
+__pycache__/
+*.py[cod]
+*.class
+backend/venv/
+*.env
 
-venv/
-env/
+# Node
+frontend/node_modules/
+frontend/build/
+frontend/.env
 
-__pycache__
+# IDE
+.vscode/
+.idea/
+
+# Misc
+.DS_Store
