@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Trading Bot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Crypto Trading Bot</h1>
+    
+    <div class="card">
+        <h2>Get Price</h2>
+        <div class="form-group">
+            <label for="symbol">Symbol:</label>
+            <input type="text" id="symbol" placeholder="BTC, ETH, etc." value="BTC">
+        </div>
+        <button onclick="getPrice()">Get Price</button>
+        <div id="price-result" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="card">
+        <h2>Execute Trade</h2>
+        <div class="form-group">
+            <label for="trade-symbol">Symbol:</label>
+            <input type="text" id="trade-symbol" value="BTC">
+        </div>
+        <div class="form-group">
+            <label for="amount">Amount (USD):</label>
+            <input type="number" id="amount" value="500">
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="is-simulated" checked> Simulation Mode
+            </label>
+        </div>
+        <button onclick="executeTrade('buy')" style="background-color: #2196F3;">Buy</button>
+        <button onclick="executeTrade('sell')" style="background-color: #f44336;">Sell</button>
+        <div id="trade-result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function getPrice() {
+            const symbol = document.getElementById('symbol').value.trim().toUpperCase();
+            if (!symbol) {
+                alert('Please enter a symbol');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('price-result');
+            resultDiv.innerHTML = 'Loading...';
+            resultDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch(`/get_price/${symbol}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <p><strong>${data.symbol}</strong>: $${data.price.toFixed(2)} ${data.currency}</p>
+                    <p>Last updated: ${new Date().toLocaleString()}</p>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        async function executeTrade(action) {
+            const symbol = document.getElementById('trade-symbol').value.trim().toUpperCase();
+            const amount = parseFloat(document.getElementById('amount').value);
+            const isSimulated = document.getElementById('is-simulated').checked;
+            
+            if (!symbol) {
+                alert('Please enter a symbol');
+                return;
+            }
+            
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('trade-result');
+            resultDiv.innerHTML = 'Processing...';
+            resultDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch(`/${action}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        symbol: symbol,
+                        amount: amount,
+                        is_simulated: isSimulated
+                    }),
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <p>Trade executed successfully!</p>
+                    <p>Trade ID: ${data.trade_id}</p>
+                    <p>Type: ${action.toUpperCase()}</p>
+                    <p>Symbol: ${symbol}</p>
+                    <p>Amount: $${amount.toFixed(2)}</p>
+                    <p>Mode: ${isSimulated ? 'Simulation' : 'Live'}</p>
+                    <p>Time: ${new Date().toLocaleString()}</p>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

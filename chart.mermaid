@@ -1,0 +1,37 @@
+flowchart TB
+    subgraph Client
+        Web("Web UI (React/TypeScript)")
+        Telegram("Telegram Bot")
+    end
+    
+    subgraph Backend
+        API("REST API (FastAPI)")
+        TradingEngine("Trading Engine")
+        subgraph "Trading Modes"
+            LiveMode("Live Trading (Binance API)")
+            DryMode("Dry-Run Mode (Simulation)")
+        end
+        DataProcessor("Data Processor")
+        ScheduleManager("Schedule Manager")
+    end
+    
+    subgraph Database
+        PostgreSQL[(PostgreSQL DB)]
+    end
+    
+    subgraph Deployment
+        Docker["Docker Containers"]
+        Azure["Azure Container Apps"]
+    end
+    
+    Web <--> API
+    Telegram <--> API
+    API <--> TradingEngine
+    TradingEngine <--> LiveMode
+    TradingEngine <--> DryMode
+    LiveMode --> Binance((Binance Exchange))
+    TradingEngine <--> DataProcessor
+    DataProcessor <--> PostgreSQL
+    ScheduleManager <--> TradingEngine
+    Backend <--> Docker
+    Docker <--> Azure

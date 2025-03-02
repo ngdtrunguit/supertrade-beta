@@ -1,0 +1,27 @@
+flowchart TB
+    subgraph Client
+        WebUI[Web UI]
+        CLI[CLI Commands]
+    end
+    
+    subgraph "Application Server"
+        REST[REST API]
+        TradingEngine[Trading Engine]
+        StrategyModule[Strategy Module]
+        BacktestModule[Backtest Module]
+    end
+    
+    subgraph "External Services"
+        BinanceAPI[Binance API]
+        PostgreSQL[(PostgreSQL)]
+    end
+    
+    WebUI --> REST
+    CLI --> REST
+    REST --> TradingEngine
+    TradingEngine --> StrategyModule
+    TradingEngine --> BacktestModule
+    TradingEngine -- "API Mode" --> BinanceAPI
+    TradingEngine -- "Dry-Run Mode" --> BacktestModule
+    TradingEngine --> PostgreSQL
+    StrategyModule --> PostgreSQL
