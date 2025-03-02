@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { createChart, CrosshairMode } from 'lightweight-charts';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -11,68 +10,11 @@ import {
 } from 'recharts';
 import { 
   TrendingUp, TrendingDown, Activity, BarChart2, Zap, 
-  DollarSign, Clock, AlertCircle 
+  DollarSign, Clock, AlertCircle, Loader2
 } from 'lucide-react';
 
-// Mock data
-const generateMockData = (days = 60) => {
-  const result = [];
-  let price = 40000;
-  let volume = 1000;
-  
-  const ema7 = [];
-  const ema21 = [];
-  let rsi = 50;
-  
-  for (let i = 0; i < days; i++) {
-    // Add some randomness to price and volume
-    const priceChange = (Math.random() - 0.5) * 800;
-    price += priceChange;
-    
-    // Volume tends to be higher on big price moves
-    volume = 1000 + Math.abs(priceChange) * 5 + (Math.random() * 2000);
-    
-    // Calculate simple EMAs for mock data
-    ema7.push(price);
-    ema21.push(price);
-    
-    if (ema7.length > 7) ema7.shift();
-    if (ema21.length > 21) ema21.shift();
-    
-    const ema7Value = ema7.reduce((sum, val) => sum + val, 0) / ema7.length;
-    const ema21Value = ema21.reduce((sum, val) => sum + val, 0) / ema21.length;
-    
-    // Update RSI
-    const rsiChange = (Math.random() - 0.5) * 10;
-    rsi += rsiChange;
-    rsi = Math.max(0, Math.min(100, rsi));
-    
-    // Calculate VWAP (simple mock)
-    const vwap = price * (1 + (Math.random() - 0.5) * 0.05);
-    
-    const date = new Date();
-    date.setDate(date.getDate() - (days - i));
-    
-    result.push({
-      date: date.toISOString().split('T')[0],
-      price,
-      volume,
-      ema7: ema7Value,
-      ema21: ema21Value,
-      vwap,
-      rsi
-    });
-  }
-  
-  return result;
-};
-
-const tradingPairs = [
-  "BTCUSDT", "ETHUSDT", "ADAUSDT", "SOLUSDT", "DOTUSDT",
-  "AVAXUSDT", "MATICUSDT", "LINKUSDT", "UNIUSDT", "SHIBUSDT"
-];
-
 const TradingDashboard = () => {
+  const [loading, setLoading] = useState(true);
   const [selectedPair, setSelectedPair] = useState("BTCUSDT");
   const [timeframe, setTimeframe] = useState("1h");
   const [marketData, setMarketData] = useState([]);
@@ -90,66 +32,148 @@ const TradingDashboard = () => {
     rsi: { signal: 'neutral', description: 'RSI within normal range (30-70)' },
     vwap: { signal: 'neutral', description: 'Price near VWAP' }
   });
+
+  const tradingPairs = [
+    "BTCUSDT", "ETHUSDT", "ADAUSDT", "SOLUSDT", "DOTUSDT",
+    "AVAXUSDT", "MATICUSDT", "LINKUSDT", "UNIUSDT", "SHIBUSDT"
+  ];
   
-  // Load mock data on component mount or when pair/timeframe changes
+  // Simulate fetching market data
   useEffect(() => {
-    // In a real app, fetch from API
+    setLoading(true);
+    
+    // In a real app, replace with API calls:
     // fetch(`/api/market-data/${selectedPair}?timeframe=${timeframe}`)
-    
-    // Mock data for demonstration
-    const mockData = generateMockData();
-    setMarketData(mockData);
-    
-    // Set mock pair info
-    const latestPrice = mockData[mockData.length - 1].price;
-    const yesterdayPrice = mockData[mockData.length - 2].price;
-    const priceChange = latestPrice - yesterdayPrice;
-    const percentChange = (priceChange / yesterdayPrice) * 100;
-    
-    setPairInfo({
-      price: latestPrice.toFixed(2),
-      priceChange24h: percentChange.toFixed(2),
-      volume24h: (mockData[mockData.length - 1].volume * latestPrice).toFixed(0),
-      high24h: (latestPrice * 1.05).toFixed(2),
-      low24h: (latestPrice * 0.95).toFixed(2)
-    });
-    
-    // Calculate technical signals
-    const latest = mockData[mockData.length - 1];
-    const emaSignal = latest.ema7 > latest.ema21 ? 'bullish' : 'bearish';
-    
-    let rsiSignal = 'neutral';
-    let rsiDesc = 'RSI within normal range (30-70)';
-    if (latest.rsi < 30) {
-      rsiSignal = 'bullish';
-      rsiDesc = 'RSI below 30 - Oversold condition';
-    } else if (latest.rsi > 70) {
-      rsiSignal = 'bearish';
-      rsiDesc = 'RSI above 70 - Overbought condition';
-    }
-    
-    let vwapSignal = 'neutral';
-    let vwapDesc = 'Price near VWAP';
-    const vwapDev = ((latest.price - latest.vwap) / latest.vwap) * 100;
-    if (vwapDev < -3) {
-      vwapSignal = 'bullish';
-      vwapDesc = `Price ${Math.abs(vwapDev).toFixed(1)}% below VWAP`;
-    } else if (vwapDev > 3) {
-      vwapSignal = 'bearish';
-      vwapDesc = `Price ${vwapDev.toFixed(1)}% above VWAP`;
-    }
-    
-    setIndicators({
-      ema: { 
-        signal: emaSignal, 
-        description: emaSignal === 'bullish' ? 
-          '7-day EMA above 21-day EMA' : '7-day EMA below 21-day EMA' 
-      },
-      rsi: { signal: rsiSignal, description: rsiDesc },
-      vwap: { signal: vwapSignal, description: vwapDesc }
-    });
-    
+    const fetchMarketData = async () => {
+      try {
+        // Simulate network request
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Generate mock data
+        const mockData = generateMockData(60);
+        setMarketData(mockData);
+        
+        // Set mock pair info
+        const latestPrice = mockData[mockData.length - 1].price;
+        const yesterdayPrice = mockData[mockData.length - 2].price;
+        const priceChange = latestPrice - yesterdayPrice;
+        const percentChange = (priceChange / yesterdayPrice) * 100;
+        
+        setPairInfo({
+          price: latestPrice.toFixed(2),
+          priceChange24h: percentChange.toFixed(2),
+          volume24h: (mockData[mockData.length - 1].volume * latestPrice).toFixed(0),
+          high24h: (latestPrice * 1.05).toFixed(2),
+          low24h: (latestPrice * 0.95).toFixed(2)
+        });
+        
+        // Calculate technical signals
+        const latest = mockData[mockData.length - 1];
+        const emaSignal = latest.ema7 > latest.ema21 ? 'bullish' : 'bearish';
+        
+        let rsiSignal = 'neutral';
+        let rsiDesc = 'RSI within normal range (30-70)';
+        if (latest.rsi < 30) {
+          rsiSignal = 'bullish';
+          rsiDesc = 'RSI below 30 - Oversold condition';
+        } else if (latest.rsi > 70) {
+          rsiSignal = 'bearish';
+          rsiDesc = 'RSI above 70 - Overbought condition';
+        }
+        
+        let vwapSignal = 'neutral';
+        let vwapDesc = 'Price near VWAP';
+        const vwapDev = ((latest.price - latest.vwap) / latest.vwap) * 100;
+        if (vwapDev < -3) {
+          vwapSignal = 'bullish';
+          vwapDesc = `Price ${Math.abs(vwapDev).toFixed(1)}% below VWAP`;
+        } else if (vwapDev > 3) {
+          vwapSignal = 'bearish';
+          vwapDesc = `Price ${vwapDev.toFixed(1)}% above VWAP`;
+        }
+        
+        setIndicators({
+          ema: { 
+            signal: emaSignal, 
+            description: emaSignal === 'bullish' ? 
+              '7-day EMA above 21-day EMA' : '7-day EMA below 21-day EMA' 
+          },
+          rsi: { signal: rsiSignal, description: rsiDesc },
+          vwap: { signal: vwapSignal, description: vwapDesc }
+        });
+        
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching market data:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchMarketData();
   }, [selectedPair, timeframe]);
+
+  // Function to generate mock data
+  const generateMockData = (days = 60) => {
+    const result = [];
+    let price = 40000;
+    let volume = 1000;
+    
+    const ema7 = [];
+    const ema21 = [];
+    let rsi = 50;
+    
+    for (let i = 0; i < days; i++) {
+      // Add some randomness to price and volume
+      const priceChange = (Math.random() - 0.5) * 800;
+      price += priceChange;
+      
+      volume = 1000 + Math.abs(priceChange) * 5 + (Math.random() * 2000);
+      
+      // Calculate simple EMAs for mock data
+      ema7.push(price);
+      ema21.push(price);
+      
+      if (ema7.length > 7) ema7.shift();
+      if (ema21.length > 21) ema21.shift();
+      
+      const ema7Value = ema7.reduce((sum, val) => sum + val, 0) / ema7.length;
+      const ema21Value = ema21.reduce((sum, val) => sum + val, 0) / ema21.length;
+      
+      // Update RSI with some randomness
+      const rsiChange = (Math.random() - 0.5) * 10;
+      rsi += rsiChange;
+      rsi = Math.max(0, Math.min(100, rsi));
+      
+      // Calculate VWAP (simple mock)
+      const vwap = price * (1 + (Math.random() - 0.5) * 0.05);
+      
+      const date = new Date();
+      date.setDate(date.getDate() - (days - i));
+      
+      result.push({
+        date: date.toISOString().split('T')[0],
+        price,
+        volume,
+        ema7: ema7Value,
+        ema21: ema21Value,
+        vwap,
+        rsi
+      });
+    }
+    
+    return result;
+  };
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-gray-500" />
+          <p className="mt-2 text-gray-500">Loading market data...</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="w-full mx-auto p-4 space-y-6">
@@ -295,7 +319,6 @@ const TradingDashboard = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <Tooltip />
                     <Line type="monotone" dataKey="rsi" stroke="#ff7300" />
-                    {/* Overbought line */}
                     <Line 
                       data={marketData.slice(-30).map(item => ({ ...item, overbought: 70 }))}
                       type="monotone"
@@ -304,7 +327,6 @@ const TradingDashboard = () => {
                       strokeDasharray="3 3"
                       dot={false}
                     />
-                    {/* Oversold line */}
                     <Line 
                       data={marketData.slice(-30).map(item => ({ ...item, oversold: 30 }))}
                       type="monotone"
@@ -406,12 +428,17 @@ const TradingDashboard = () => {
             <CardContent className="space-y-4">
               <div>
                 <label className="text-sm font-medium">Amount (USDT)</label>
-                <input 
-                  type="number" 
-                  className="w-full mt-1 p-2 border rounded" 
-                  placeholder="100"
-                  defaultValue="100"
-                />
+                <div className="flex mt-1">
+                  <input 
+                    type="number" 
+                    className="w-full p-2 border rounded-l" 
+                    placeholder="100"
+                    defaultValue="100"
+                  />
+                  <div className="bg-gray-100 flex items-center px-3 border-y border-r rounded-r">
+                    <DollarSign className="h-4 w-4 text-gray-500" />
+                  </div>
+                </div>
               </div>
               
               <div className="flex space-x-2">
