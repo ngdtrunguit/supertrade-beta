@@ -1,4 +1,4 @@
-// src/components/layout/AppLayout.tsx
+// src/components/AppLayout.tsx
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
@@ -17,10 +17,10 @@ import {
   ChevronUp,
   RefreshCw
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { cn } from '../utils/cn';
+import { Button } from './ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,7 +28,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from './ui/dropdown-menu';
 
 interface NavItem {
   title: string;
@@ -99,84 +99,6 @@ const AppLayout: React.FC = () => {
             <span>Crypto Trading Bot</span>
           </Link>
         </nav>
-        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="shrink-0 md:hidden"
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="flex flex-col">
-            <nav className="grid gap-2 text-lg font-medium">
-              <Link
-                to="/"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-2 text-lg font-semibold"
-              >
-                <Activity className="h-5 w-5" />
-                <span className="sr-only">Crypto Trading Bot</span>
-              </Link>
-              {mainNavItems.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900",
-                    location.pathname === item.href || 
-                    (item.href !== "/" && location.pathname.startsWith(item.href))
-                      ? "text-gray-900 bg-gray-100"
-                      : ""
-                  )}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {item.icon}
-                  <span>{item.title}</span>
-                </Link>
-              ))}
-              <div className="my-2 h-px bg-gray-200" />
-              {otherNavItems.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900",
-                    location.pathname === item.href ||
-                    (item.href !== "/" && location.pathname.startsWith(item.href))
-                      ? "text-gray-900 bg-gray-100"
-                      : ""
-                  )}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {item.icon}
-                  <span>{item.title}</span>
-                </Link>
-              ))}
-            </nav>
-            <div className="mt-auto">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Avatar>
-                    <AvatarImage src="/placeholder-user.jpg" />
-                    <AvatarFallback>U</AvatarFallback>
-                  </Avatar>
-                  <div className="grid gap-0.5 text-xs">
-                    <div className="font-medium">User</div>
-                    <div className="text-gray-500">user@example.com</div>
-                  </div>
-                </div>
-                <Button variant="ghost" size="icon">
-                  <LogOut className="h-5 w-5" />
-                  <span className="sr-only">Log out</span>
-                </Button>
-              </div>
-            </div>
-          </SheetContent>
-        </Sheet>
         <div className="flex-1">
           <nav className="hidden md:flex md:gap-6 lg:gap-10">
             {mainNavItems.map((item) => (
@@ -247,8 +169,89 @@ const AppLayout: React.FC = () => {
         </div>
       </header>
       
-      {/* Sidebar (desktop only) */}
+      {/* Mobile Menu */}
+      <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+        <SheetTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            className="shrink-0 md:hidden"
+            onClick={() => setIsMobileMenuOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle menu</span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="flex flex-col">
+          <nav className="grid gap-2 text-lg font-medium">
+            <Link
+              to="/"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-2 text-lg font-semibold"
+            >
+              <Activity className="h-5 w-5" />
+              <span className="sr-only">Crypto Trading Bot</span>
+            </Link>
+            {mainNavItems.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900",
+                  location.pathname === item.href || 
+                  (item.href !== "/" && location.pathname.startsWith(item.href))
+                    ? "text-gray-900 bg-gray-100"
+                    : ""
+                )}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {item.icon}
+                <span>{item.title}</span>
+              </Link>
+            ))}
+            <div className="my-2 h-px bg-gray-200" />
+            {otherNavItems.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900",
+                  location.pathname === item.href ||
+                  (item.href !== "/" && location.pathname.startsWith(item.href))
+                    ? "text-gray-900 bg-gray-100"
+                    : ""
+                )}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {item.icon}
+                <span>{item.title}</span>
+              </Link>
+            ))}
+          </nav>
+          <div className="mt-auto">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Avatar>
+                  <AvatarImage src="/placeholder-user.jpg" />
+                  <AvatarFallback>U</AvatarFallback>
+                </Avatar>
+                <div className="grid gap-0.5 text-xs">
+                  <div className="font-medium">User</div>
+                  <div className="text-gray-500">user@example.com</div>
+                </div>
+              </div>
+              <Button variant="ghost" size="icon">
+                <LogOut className="h-5 w-5" />
+                <span className="sr-only">Log out</span>
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+      
+      {/* Main Content Area */}
       <div className="grid flex-1 md:grid-cols-[240px_1fr]">
+        {/* Sidebar (desktop only) */}
         <aside className="hidden border-r bg-gray-50/40 md:block">
           <div className="flex h-full max-h-screen flex-col gap-2 p-4">
             <div className="flex flex-col gap-1">
@@ -272,58 +275,48 @@ const AppLayout: React.FC = () => {
               </Button>
             </div>
             <nav className="grid gap-1 text-sm">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="justify-start font-semibold">
-                    <ChevronDown className="mr-2 h-4 w-4" />
-                    Main Navigation
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-60">
-                  {mainNavItems.map((item) => (
-                    <DropdownMenuItem key={item.href} asChild>
-                      <Link to={item.href}>{item.title}</Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-              {mainNavItems.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900",
-                    location.pathname === item.href || 
-                    (item.href !== "/" && location.pathname.startsWith(item.href))
-                      ? "text-gray-900 bg-gray-100"
-                      : ""
-                  )}
-                >
-                  {item.icon}
-                  <span>{item.title}</span>
-                </Link>
-              ))}
-              <div className="my-2 h-px bg-gray-200" />
-              <Button variant="ghost" className="justify-start font-semibold">
-                <ChevronDown className="mr-2 h-4 w-4" />
-                Other
-              </Button>
-              {otherNavItems.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900",
-                    location.pathname === item.href ||
-                    (item.href !== "/" && location.pathname.startsWith(item.href))
-                      ? "text-gray-900 bg-gray-100"
-                      : ""
-                  )}
-                >
-                  {item.icon}
-                  <span>{item.title}</span>
-                </Link>
-              ))}
+              <div className="py-2">
+                <h2 className="mb-2 px-2 text-xs font-semibold text-gray-500">
+                  Main Navigation
+                </h2>
+                {mainNavItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900",
+                      location.pathname === item.href || 
+                      (item.href !== "/" && location.pathname.startsWith(item.href))
+                        ? "text-gray-900 bg-gray-100"
+                        : ""
+                    )}
+                  >
+                    {item.icon}
+                    <span>{item.title}</span>
+                  </Link>
+                ))}
+              </div>
+              <div className="py-2">
+                <h2 className="mb-2 px-2 text-xs font-semibold text-gray-500">
+                  Other
+                </h2>
+                {otherNavItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900",
+                      location.pathname === item.href ||
+                      (item.href !== "/" && location.pathname.startsWith(item.href))
+                        ? "text-gray-900 bg-gray-100"
+                        : ""
+                    )}
+                  >
+                    {item.icon}
+                    <span>{item.title}</span>
+                  </Link>
+                ))}
+              </div>
             </nav>
             <div className="mt-auto">
               <div className="flex flex-col items-start gap-1 pt-4 border-t">
