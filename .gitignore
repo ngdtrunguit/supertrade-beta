@@ -5,6 +5,7 @@ __pycache__/
 backend/venv/
 backend/src/__pycache__
 *.env
+venv
 
 # Node
 frontend/node_modules/
